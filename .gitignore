@@ -1,0 +1,23 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+/bun.lockb
+
+# production
+/build
+/dist
+
+# local env files
+.env*.local
+
+servicesKey.json
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
