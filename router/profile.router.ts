@@ -1,9 +1,11 @@
-import { Controller, M } from 'lib/makeRouter';
+import { Controller, M, useMiddleware } from 'lib/makeRouter';
+import { authMiddleware } from "middleware/authMiddleware";
 import { ProfileModel } from 'model/profile.model';
 
 import admin from 'firebase-admin';
 import { app } from 'firebase';
 
+import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 
 const profileSchema = Joi.object({
@@ -26,9 +28,21 @@ const createProfileSchema = Joi.object({
 export class ProfileController extends Controller {
   auth = admin.auth(app);
 
-  @M.get('/profile')
+  @M.get('/Me')
+  @useMiddleware(authMiddleware)
   async getProfile() {
     const { userId } = await this.jsonParse(profileSchema);
+
+    return await ProfileModel.find({ userId });
+  }
+
+  @M.get('/loginProfile')
+  async login() {
+    const { userId } = await this.jsonParse(profileSchema);
+
+    const token = jwt.sign({ userId: userId }, process.env.SECRET_KEY!, {
+      expiresIn: '1h',
+    });
 
     return await ProfileModel.find({ userId });
   }

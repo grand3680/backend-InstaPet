@@ -9,7 +9,7 @@ import { Server } from 'http';
 import { makeRouter } from 'lib/makeRouter';
 import mongoose from 'mongoose';
 import { ProfileController } from 'router/profile.router';
-import { PostController } from 'router/post.router';
+import { PostController } from 'router/feeds.router';
 import { PagesController } from 'router/pages.router';
 
 const app: Express = express();
@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/profile', makeRouter(ProfileController));
-app.use('/post', makeRouter(PostController));
+app.use('/feeds', makeRouter(PostController));
 app.use('/page', makeRouter(PagesController));
 
 // Add this error handling middleware

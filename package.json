@@ -18,6 +18,7 @@
     "firebase": "^10.5.2",
     "firebase-admin": "^11.11.0",
     "joi": "^17.13.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.0"
   },
   "devDependencies": {
@@ -29,6 +30,6 @@
     "concurrently": "^8.2.2",
     "nodemon": "^3.0.1",
     "prettier": "^3.3.3",
-    "typescript": "^5.2.2"
+    "typescript": "^5.5.4"
   }
 }

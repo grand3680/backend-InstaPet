@@ -1,6 +1,7 @@
 import {
   NextFunction,
   Request,
+  RequestHandler,
   Response,
   Router
 } from 'express';
@@ -15,6 +16,7 @@ type TRoute = {
   method: TMethod;
   path: TPathParams;
   methodName: TMethodName;
+  middlewares?: RequestHandler[];
 };
 type TRoutes = { [SRoutes]: TRoute[] };
 
@@ -33,6 +35,37 @@ export class Controller {
     return value;
   }
 }
+
+
+export function useMiddleware(...middlewares: RequestHandler[]) {
+  return <T extends typeof Controller>(
+    target: T['prototype'],
+    methodName: TMethodName,
+    desc: TypedPropertyDescriptor<() => any>
+  ) => {
+    const Contstructor: Controller & TRoutes =
+      target.constructor as any;
+    const routes =
+      Contstructor[SRoutes] ??
+      (Contstructor[SRoutes] = [] as any);
+
+    const route = routes.find(
+      (route) => route.methodName === methodName
+    );
+
+    if (route) {
+      route.middlewares = middlewares;
+    } else {
+      routes.push({
+        method: 'use', // This will apply the middleware regardless of the method type
+        path: '', // We can adjust this if needed
+        methodName,
+        middlewares,
+      } as any);
+    }
+  };
+}
+
 
 export function method(method: TMethod, path: TPathParams) {
   return <T extends typeof Controller>(
@@ -84,20 +117,23 @@ export function makeRouter<T extends Controller>(
   });
 
   for (const route of routes) {
-    router[route.method](route.path, async (req, res, next) => {
-      try {
-        const ctrl: T = (req as any)[controller];
-        const method = (ctrl as any)[
-          route.methodName
-        ] as Function;
-        const result = await method.call(
-          Object.assign(ctrl, { req, res, next })
-        );
-        if (result) res.send(result);
-      } catch (e) {
-        next(e);
+    const routeMiddlewares = route.middlewares || [];
+    router[route.method](
+      route.path,
+      ...routeMiddlewares, // Apply the middlewares before the route handler
+      async (req, res, next) => {
+        try {
+          const ctrl: T = (req as any)[controller];
+          const method = (ctrl as any)[route.methodName] as Function;
+          const result = await method.call(
+            Object.assign(ctrl, { req, res, next })
+          );
+          if (result) res.send(result);
+        } catch (e) {
+          next(e);
+        }
       }
-    });
+    );
   }
 
   return router;

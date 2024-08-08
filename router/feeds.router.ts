@@ -1,4 +1,5 @@
-import { Controller, M } from 'lib/makeRouter';
+import { Controller, M, useMiddleware } from 'lib/makeRouter';
+import { authMiddleware } from 'middleware/authMiddleware';
 import { PostModel } from 'model/post.model';
 import { ProfileModel } from 'model/profile.model';
 
@@ -32,6 +33,12 @@ export class PostController extends Controller {
   async getPost() {
     const { postId } = await this.jsonParse(postSchema);
     return await PostModel.find({ postId });
+  }
+
+  @M.get('/test')
+  @useMiddleware(authMiddleware)
+  async checkIt() {
+    return this.res.status(200).send('test');
   }
 
   @M.post('/changePost')
