@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,vue,css,scss,md,json}' --config ./.prettierrc",
-    "start": "bun run --watch index.ts"
+    "watch": "bun run --watch index.ts",
+    "start": "bun run index.ts"
   },
   "keywords": [],
   "author": "",

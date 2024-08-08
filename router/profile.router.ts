@@ -1,5 +1,5 @@
 import { Controller, M, useMiddleware } from 'lib/makeRouter';
-import { authMiddleware } from "middleware/authMiddleware";
+import { authMiddleware } from 'middleware/authMiddleware';
 import { ProfileModel } from 'model/profile.model';
 
 import admin from 'firebase-admin';
@@ -28,25 +28,33 @@ const createProfileSchema = Joi.object({
 export class ProfileController extends Controller {
   auth = admin.auth(app);
 
-  @M.get('/Me')
   @useMiddleware(authMiddleware)
+  @M.get('/Me')
   async getProfile() {
     const { userId } = await this.jsonParse(profileSchema);
 
     return await ProfileModel.find({ userId });
   }
 
-  @M.get('/loginProfile')
+  @M.get('/login')
   async login() {
     const { userId } = await this.jsonParse(profileSchema);
 
-    const token = jwt.sign({ userId: userId }, process.env.SECRET_KEY!, {
+  
+    const access_token = jwt.sign({userId : userId}, process.env.SECRET!, {
       expiresIn: '1h',
-    });
+      });
+    const refresh_token = jwt.sign({userId : userId}, process.env.SECRET!, {
+      expiresIn: '20h',
+      });
 
-    return await ProfileModel.find({ userId });
+    return this.res.status(200).send({
+      "access_token" : access_token,
+      "refresh_token" : refresh_token
+    });
   }
 
+  @useMiddleware(authMiddleware)
   @M.post('/changeProfile')
   async changeProfile() {
     const { userId, username, img, postsId } =

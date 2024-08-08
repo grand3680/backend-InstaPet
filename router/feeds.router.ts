@@ -35,12 +35,7 @@ export class PostController extends Controller {
     return await PostModel.find({ postId });
   }
 
-  @M.get('/test')
   @useMiddleware(authMiddleware)
-  async checkIt() {
-    return this.res.status(200).send('test');
-  }
-
   @M.post('/changePost')
   async changePost() {
     const { text, tags, postId, title } =
@@ -58,6 +53,7 @@ export class PostController extends Controller {
     );
   }
 
+  @useMiddleware(authMiddleware)
   @M.post('/createPost')
   async createPost() {
     const { userId, text, title, tags } =
@@ -81,6 +77,7 @@ export class PostController extends Controller {
     return this.res.status(200).send('post succeses create');
   }
 
+  @useMiddleware(authMiddleware)
   @M.delete('/deletePost')
   async deletePost() {
     const { userId, postId } =

@@ -36,7 +36,6 @@ export class Controller {
   }
 }
 
-
 export function useMiddleware(...middlewares: RequestHandler[]) {
   return <T extends typeof Controller>(
     target: T['prototype'],
@@ -50,22 +49,15 @@ export function useMiddleware(...middlewares: RequestHandler[]) {
       (Contstructor[SRoutes] = [] as any);
 
     const route = routes.find(
-      (route) => route.methodName === methodName
+      (route) => route.methodName == methodName
     );
 
-    if (route) {
-      route.middlewares = middlewares;
-    } else {
-      routes.push({
-        method: 'use', // This will apply the middleware regardless of the method type
-        path: '', // We can adjust this if needed
-        methodName,
-        middlewares,
-      } as any);
-    }
+    if (!route) {
+      throw new Error("can't find methodName in routes");
+    } 
+    route.middlewares = middlewares;
   };
 }
-
 
 export function method(method: TMethod, path: TPathParams) {
   return <T extends typeof Controller>(
@@ -124,7 +116,9 @@ export function makeRouter<T extends Controller>(
       async (req, res, next) => {
         try {
           const ctrl: T = (req as any)[controller];
-          const method = (ctrl as any)[route.methodName] as Function;
+          const method = (ctrl as any)[
+            route.methodName
+          ] as Function;
           const result = await method.call(
             Object.assign(ctrl, { req, res, next })
           );
