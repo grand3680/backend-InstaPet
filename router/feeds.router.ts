@@ -28,7 +28,7 @@ const deletePostSchema = Joi.object({
   postId: Joi.string().min(3).required()
 });
 
-export class PostController extends Controller {
+class PostController extends Controller {
   @M.get('/post')
   async getPost() {
     const { postId } = await this.jsonParse(postSchema);
@@ -86,3 +86,5 @@ export class PostController extends Controller {
     return await PostModel.deleteOne({ userId, postId });
   }
 }
+
+export default PostController;

@@ -1,12 +1,12 @@
-import { Controller, M } from 'lib/makeRouter';
-import { PostModel } from 'model/post.model';
+import { Controller, M } from '@/lib/makeRouter';
+import { PostModel } from '@/model/post.model';
 
 import Joi from 'joi';
 
-const pageSchema = Joi.object({ page: Joi.string().required() });
+const pageSchema = Joi.object({ page: Joi.number().required() });
 const postsPerPage = 5;
 
-export class PagesController extends Controller {
+class PagesController extends Controller {
   @M.get('/count')
   async getPagesCount() {
     const totalPosts = await PostModel.countDocuments();
@@ -19,7 +19,9 @@ export class PagesController extends Controller {
   async getPage() {
     const { page } = await this.jsonParse(pageSchema);
 
-    const skip = (+page - 1) * postsPerPage;
+    const skip = (page - 1) * postsPerPage;
     return await PostModel.find().skip(skip).limit(postsPerPage);
   }
 }
+
+export default PagesController;

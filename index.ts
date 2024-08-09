@@ -6,11 +6,14 @@ import express, {
   NextFunction
 } from 'express';
 import { Server } from 'http';
-import { makeRouter } from 'lib/makeRouter';
 import mongoose from 'mongoose';
-import { ProfileController } from 'router/profile.router';
-import { PostController } from 'router/feeds.router';
-import { PagesController } from 'router/pages.router';
+
+import { makeRouter } from '@/lib/makeRouter';
+import ProfileController from '@/router/profile.router';
+import PostController from '@/router/feeds.router';
+import PagesController from '@/router/pages.router';
+
+import ErrorHandler from '@/services/ErrorHandler';
 
 const app: Express = express();
 const port = process.env.PORT || 8000;
@@ -27,12 +30,20 @@ app.use('/page', makeRouter(PagesController));
 // Add this error handling middleware
 app.use(
   (
-    err: Error,
+    err: Error | ErrorHandler,
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
-    console.error(err.stack);
+    console.log(err);
+
+    if (err instanceof ErrorHandler) {
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors
+      });
+    }
+
     res.status(500).send('Something went wrong');
   }
 );
@@ -47,7 +58,7 @@ server.prependListener(
 const start = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URL!);
-    console.log('Connected to MongoDB');
+    console.log('--Connected to MongoDB--');
     server.listen(port, () =>
       console.log(`http://localhost:${port}`)
     );

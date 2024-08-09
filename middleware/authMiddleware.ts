@@ -9,11 +9,10 @@ export function authMiddleware(
   const token = req.header('Authorization');
 
   if (!token)
-    return res.status(401).json({ error: 'Access denied!!' });
+    return res.status(401).json({ error: 'Token not provided' });
 
   try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY!);
-    console.log(decoded);
+    jwt.verify(token.split(' ')[1], process.env.SECRET_ACCSEES!);
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });

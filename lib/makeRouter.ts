@@ -1,3 +1,4 @@
+import ErrorHandler from '@/services/ErrorHandler';
 import {
   NextFunction,
   Request,
@@ -30,7 +31,9 @@ export class Controller {
 
     const { error, value } = schema.validate(parsedBody);
     if (error)
-      return this.res.status(400).send('not correct data');
+      return ErrorHandler.BadRequest(
+        'not correct data ' + error.details
+      );
 
     return value;
   }
@@ -54,7 +57,7 @@ export function useMiddleware(...middlewares: RequestHandler[]) {
 
     if (!route) {
       throw new Error("can't find methodName in routes");
-    } 
+    }
     route.middlewares = middlewares;
   };
 }

@@ -1,9 +1,13 @@
 import { Schema, model } from 'mongoose';
 
 const profileSchema = new Schema({
-  userId: String, // firebase uid
+  userId: {
+    type: String,
+    unique: true
+  }, // firebase uid
   username: String,
   img: String,
+  role: String,
   postsId: [String]
 });
 

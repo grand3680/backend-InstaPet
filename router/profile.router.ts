@@ -1,12 +1,13 @@
-import { Controller, M, useMiddleware } from 'lib/makeRouter';
-import { authMiddleware } from 'middleware/authMiddleware';
-import { ProfileModel } from 'model/profile.model';
+import { Controller, M, useMiddleware } from '@/lib/makeRouter';
+import { authMiddleware } from '@/middleware/authMiddleware';
+import { ProfileModel } from '@/model/profile.model';
+import TokenService from '@/services/TokenService';
 
 import admin from 'firebase-admin';
-import { app } from 'firebase';
+import { app } from '@/firebase';
 
-import jwt from 'jsonwebtoken';
 import Joi from 'joi';
+import ErrorHandler from '@/services/ErrorHandler';
 
 const profileSchema = Joi.object({
   userId: Joi.string().min(3).required()
@@ -25,8 +26,8 @@ const createProfileSchema = Joi.object({
   password: Joi.string().min(3).max(8).required()
 });
 
-export class ProfileController extends Controller {
-  auth = admin.auth(app);
+class ProfileController extends Controller {
+  auth: admin.auth.Auth = admin.auth(app);
 
   @useMiddleware(authMiddleware)
   @M.get('/Me')
@@ -40,17 +41,23 @@ export class ProfileController extends Controller {
   async login() {
     const { userId } = await this.jsonParse(profileSchema);
 
-  
-    const access_token = jwt.sign({userId : userId}, process.env.SECRET!, {
-      expiresIn: '1h',
-      });
-    const refresh_token = jwt.sign({userId : userId}, process.env.SECRET!, {
-      expiresIn: '20h',
-      });
+    const user = await ProfileModel.findOne({ userId });
+    if (!user) {
+      return ErrorHandler.NotFoundError('User not found');
+    }
+
+    const access_token = TokenService.generateAccestoken({
+      userId: userId,
+      roles: user.role
+    });
+    const refresh_token = TokenService.generateAccestoken({
+      userId: userId,
+      roles: user.role
+    });
 
     return this.res.status(200).send({
-      "access_token" : access_token,
-      "refresh_token" : refresh_token
+      access_token: access_token,
+      refresh_token: refresh_token
     });
   }
 
@@ -60,7 +67,7 @@ export class ProfileController extends Controller {
     const { userId, username, img, postsId } =
       await this.jsonParse(changeProfileSchema);
 
-    return await ProfileModel.updateOne(
+    await ProfileModel.updateOne(
       { userId },
       {
         $push: {
@@ -70,6 +77,7 @@ export class ProfileController extends Controller {
         }
       }
     );
+    return this.res.status(200).send('Profile updated');
   }
 
   @M.post('/createProfile')
@@ -94,6 +102,21 @@ export class ProfileController extends Controller {
       img: '',
       postsId: ['']
     });
-    return user;
+
+    const access_token = TokenService.generateAccestoken({
+      userId: user.uid,
+      roles: 'user'
+    });
+    const refresh_token = TokenService.generateAccestoken({
+      userId: user.uid,
+      roles: 'user'
+    });
+
+    return this.res.status(200).send({
+      access_token: access_token,
+      refresh_token: refresh_token
+    });
   }
 }
+
+export default ProfileController;

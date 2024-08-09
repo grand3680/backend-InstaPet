@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "module": "esnext",
+    "lib": [],
+    "module": "ESNext",
     "target": "esnext",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
     "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
     "noEmit": true,
     "composite": true,
+
+    "jsx": "react",
+
+    "outDir": "./build",
     "strict": true,
     "downlevelIteration": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
@@ -20,6 +24,10 @@
     ],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "baseUrl": "./"
-  }
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["**/*.ts", "servicesKey.json", "package.json"]
 }
