@@ -1,11 +1,5 @@
 import ErrorHandler from '@/services/ErrorHandler';
-import {
-  NextFunction,
-  Request,
-  RequestHandler,
-  Response,
-  Router
-} from 'express';
+import { NextFunction, Request, RequestHandler, Response, Router } from 'express';
 import { Schema } from 'joi';
 
 const SRoutes = Symbol();
@@ -21,8 +15,14 @@ type TRoute = {
 };
 type TRoutes = { [SRoutes]: TRoute[] };
 
+interface CustomRequestI<T> extends Request {
+  user?: T;
+}
+export type TUser = { role: string; userId: string };
+export type TCustomRequest = CustomRequestI<TUser>;
+
 export class Controller {
-  req!: Request;
+  req!: TCustomRequest;
   res!: Response;
   next!: NextFunction;
 
@@ -31,9 +31,7 @@ export class Controller {
 
     const { error, value } = schema.validate(parsedBody);
     if (error)
-      return ErrorHandler.BadRequest(
-        'not correct data ' + error.details
-      );
+      return ErrorHandler.BadRequestError('not correct data ' + error.details);
 
     return value;
   }
@@ -45,15 +43,10 @@ export function useMiddleware(...middlewares: RequestHandler[]) {
     methodName: TMethodName,
     desc: TypedPropertyDescriptor<() => any>
   ) => {
-    const Contstructor: Controller & TRoutes =
-      target.constructor as any;
-    const routes =
-      Contstructor[SRoutes] ??
-      (Contstructor[SRoutes] = [] as any);
+    const Contstructor: Controller & TRoutes = target.constructor as any;
+    const routes = Contstructor[SRoutes] ?? (Contstructor[SRoutes] = [] as any);
 
-    const route = routes.find(
-      (route) => route.methodName == methodName
-    );
+    const route = routes.find((route) => route.methodName == methodName);
 
     if (!route) {
       throw new Error("can't find methodName in routes");
@@ -68,11 +61,8 @@ export function method(method: TMethod, path: TPathParams) {
     methodName: TMethodName,
     desc: TypedPropertyDescriptor<() => any>
   ) => {
-    const Contstructor: Controller & TRoutes =
-      target.constructor as any;
-    const routes =
-      Contstructor[SRoutes] ??
-      (Contstructor[SRoutes] = [] as any);
+    const Contstructor: Controller & TRoutes = target.constructor as any;
+    const routes = Contstructor[SRoutes] ?? (Contstructor[SRoutes] = [] as any);
 
     routes.push({
       method,
@@ -97,9 +87,7 @@ export const M = {
   }
 };
 
-export function makeRouter<T extends Controller>(
-  Controller: new () => T
-) {
+export function makeRouter<T extends Controller>(Controller: new () => T) {
   const controller = Symbol();
   const router = Router();
   const routes = (Controller as any as TRoutes)[SRoutes];
@@ -119,11 +107,13 @@ export function makeRouter<T extends Controller>(
       async (req, res, next) => {
         try {
           const ctrl: T = (req as any)[controller];
-          const method = (ctrl as any)[
-            route.methodName
-          ] as Function;
+          const method = (ctrl as any)[route.methodName] as Function;
           const result = await method.call(
-            Object.assign(ctrl, { req, res, next })
+            Object.assign(ctrl, {
+              req,
+              res,
+              next
+            })
           );
           if (result) res.send(result);
         } catch (e) {

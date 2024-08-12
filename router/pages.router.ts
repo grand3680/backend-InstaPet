@@ -12,15 +12,17 @@ class PagesController extends Controller {
     const totalPosts = await PostModel.countDocuments();
 
     const totalPages = Math.ceil(totalPosts / postsPerPage);
-    return { totalPages: totalPages };
+    return this.res.status(200).json({ totalPages: totalPages });
   }
 
-  @M.get('/page')
+  @M.get('/')
   async getPage() {
     const { page } = await this.jsonParse(pageSchema);
 
     const skip = (page - 1) * postsPerPage;
-    return await PostModel.find().skip(skip).limit(postsPerPage);
+    const pageData = await PostModel.find().skip(skip).limit(postsPerPage);
+
+    return this.res.status(200).json({ pageData: pageData });
   }
 }
 

@@ -1,9 +1,10 @@
 {
   "semi": true,
   "tabWidth": 2,
-  "printWidth": 65,
+  "printWidth": 85,
   "singleQuote": true,
   "trailingComma": "none",
   "htmlWhitespaceSensitivity": "ignore",
+  "jsxSingleQuote": true,
   "endOfLine": "auto"
 }

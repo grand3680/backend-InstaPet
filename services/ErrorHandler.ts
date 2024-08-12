@@ -2,21 +2,17 @@ class ErrorHandler extends Error {
   public status: number;
   public errors: Error[];
 
-  constructor(
-    status: number,
-    message: string,
-    errors: Error[] = []
-  ) {
+  constructor(status: number, message: string, errors: Error[] = []) {
     super(message);
     this.status = status;
     this.errors = errors;
   }
 
-  static UnauthorizedError() {
-    return new ErrorHandler(401, 'User not authorized');
+  static UnauthorizedError(message: string = 'User not authorized') {
+    return new ErrorHandler(401, message);
   }
 
-  static BadRequest(message: string, errors: Error[] = []) {
+  static BadRequestError(message: string, errors: Error[] = []) {
     return new ErrorHandler(400, message, errors);
   }
 

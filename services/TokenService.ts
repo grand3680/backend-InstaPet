@@ -1,42 +1,28 @@
 import jwt from 'jsonwebtoken';
 
 class TokenService {
-  static generateAccestoken(payload: Object): string {
-    const access_token = jwt.sign(
-      payload,
-      process.env.SECRET_ACCESS!,
-      {
-        expiresIn: '1h'
-      }
-    );
+  static generateAccestoken<T extends Object>(payload: T): string {
+    const access_token = jwt.sign(payload, process.env.SECRET_ACCESS!, {
+      expiresIn: '1h'
+    });
 
     return access_token;
   }
 
-  static generateRefreshtoken(payload: Object): string {
-    const refresh_token = jwt.sign(
-      payload,
-      process.env.SECRET_REFRESH!,
-      {
-        expiresIn: '20h'
-      }
-    );
+  static generateRefreshtoken<T extends Object>(payload: T): string {
+    const refresh_token = jwt.sign(payload, process.env.SECRET_REFRESH!, {
+      expiresIn: '20h'
+    });
 
     return refresh_token;
   }
 
-  static validateAccessToken(token: string): jwt.JwtPayload {
-    return jwt.verify(
-      token,
-      process.env.SECRET_ACCESS!
-    ) as jwt.JwtPayload;
+  static validateAccessToken<T extends object>(token: string): jwt.JwtPayload & T {
+    return jwt.verify(token, process.env.SECRET_ACCESS!) as jwt.JwtPayload & T;
   }
 
-  static validateRefreshToken(token: string): jwt.JwtPayload {
-    return jwt.verify(
-      token,
-      process.env.SECRET_REFRESH!
-    ) as jwt.JwtPayload;
+  static validateRefreshToken<T extends object>(token: string): jwt.JwtPayload & T {
+    return jwt.verify(token, process.env.SECRET_REFRESH!) as jwt.JwtPayload & T;
   }
 }
 

@@ -4,7 +4,8 @@ const postSchema = new Schema({
   userId: String,
   postId: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
   text: {
     type: String,
